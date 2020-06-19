@@ -1,0 +1,12 @@
+version: '3.4'
+
+services:
+  server:
+    image: server:latest
+    build:
+      context: ./server
+
+  client:
+    image: client/latest
+    build:
+      context: ./client
