@@ -1,13 +1,9 @@
 extern crate bytesize;
 
-use crate::Command::{Download, Finish, Upload};
+use super::{stream::Stream, tcp, udp};
 use bytesize::ByteSize;
 use std;
 use std::time;
-
-pub mod stream;
-mod tcp;
-mod udp;
 
 pub const CLEAR_SCREEN: &str = "\x1B[2J\x1B[1;1H";
 pub const CLEAR_PREV_LINE: &str = "\x1b[0F\x1b[2K";
@@ -31,7 +27,7 @@ pub fn connect(protocol: &str, addr: &str, timeout: time::Duration) -> Result<Cl
 }
 
 pub struct Client {
-    stream: Box<dyn stream::Client>,
+    stream: Box<dyn Stream>,
 }
 
 impl Client {
@@ -82,7 +78,7 @@ fn fmt_duration(t: time::Duration) -> String {
 impl Client {
     // Upload a ASCII Buffer to the server at duration
     pub fn upload(&mut self, duration: time::Duration) -> Result<(), String> {
-        self.command(Upload)?;
+        self.command(Command::Upload)?;
 
         // print title
         // println!(
@@ -124,7 +120,7 @@ impl Client {
             );
 
             // adjust buffer size to TCP Window Size
-            if let Ok(s) = self.stream.send_buffer_size() {
+            if let Ok(s) = self.stream.write_buffer_size() {
                 if s < send {
                     send = s;
                 } else if s > send {
@@ -138,13 +134,13 @@ impl Client {
             }
         }
 
-        self.command(Finish)
+        self.command(Command::Finish)
     }
 }
 
 impl Client {
     pub fn download(&mut self, duration: time::Duration) -> Result<(), String> {
-        self.command(Download)?;
+        self.command(Command::Download)?;
 
         let size: usize = 1024 * 500; // 500 KiB
         let mut download: usize = 0;
@@ -182,11 +178,11 @@ impl Client {
             );
 
             // adjust buffer size to TCP Window Size
-            if let Ok(s) = self.stream.recv_buffer_size() {
+            if let Ok(s) = self.stream.read_buffer_size() {
                 // ToDo: resize buffer
                 buf = vec![0; s];
             }
         }
-        self.command(Finish)
+        self.command(Command::Finish)
     }
 }
