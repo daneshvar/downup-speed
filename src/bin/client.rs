@@ -1,7 +1,7 @@
 extern crate parse_duration;
 
 use serde_derive::Deserialize;
-use std::time;
+use std::env;
 use toml;
 
 #[derive(Debug, Deserialize)]
@@ -24,15 +24,7 @@ struct Test {
 }
 
 fn main() {
-    println!("Client 2 ...");
-    let config;
-    match load_config() {
-        Ok(c) => config = c,
-        Err(e) => {
-            println!("Error on load config: {}", e);
-            return;
-        }
-    }
+    let config = load_config().expect("Error on load config");
 
     let protocol = config.server.protocol.as_str();
     let addr = config.server.address.as_str();
@@ -44,47 +36,36 @@ fn main() {
         .expect("Error on Parse config upload time");
 
     println!(
-        "Server  : {}\nProtocol: {}\nTimeout : {}\n",
-        addr,
-        protocol,
-        config.server.timeout.as_str()
+        "Server  : {}\nProtocol: {}\nTimeout : {:?}\nUpload  : {:?}\nDownload: {:?}\n",
+        addr, protocol, timeout, upload_duration, download_duration
     );
 
     if upload_duration.as_secs() > 0 {
-        println!("Starting upload test ...");
-        if let Err(e) = upload(protocol, addr, timeout, upload_duration) {
+        println!("[Upload  ] ...");
+        let mut conn = downup::connect(protocol, addr, timeout).expect("connect");
+        if let Err(e) = conn.upload(upload_duration) {
             println!("Error in Upload on {}://{}: {:?}", protocol, addr, e);
         }
     }
 
     if download_duration.as_secs() > 0 {
-        println!("Starting download test ...");
-        if let Err(e) = download(protocol, addr, timeout, download_duration) {
+        println!("[Download] ...");
+        let mut conn = downup::connect(protocol, addr, timeout).expect("connect");
+        if let Err(e) = conn.download(download_duration) {
             println!("Error in Download on {}://{}: {:?}", protocol, addr, e);
         }
     }
 }
 
-fn upload(
-    protocol: &str,
-    addr: &str,
-    timeout: time::Duration,
-    duration: time::Duration,
-) -> Result<(), String> {
-    downup::connect(protocol, addr, timeout)?.upload(duration)
-}
-
-fn download(
-    protocol: &str,
-    addr: &str,
-    timeout: time::Duration,
-    duration: time::Duration,
-) -> Result<(), String> {
-    downup::connect(protocol, addr, timeout)?.download(duration)
-}
-
 fn load_config() -> Result<Config, String> {
-    let r = std::fs::read_to_string("/etc/config.toml");
+    let args: Vec<String> = env::args().collect();
+
+    let r = std::fs::read_to_string(if args.len() > 1 {
+        args[1].as_str()
+    } else {
+        "/etc/config.toml"
+    });
+
     if r.is_err() {
         return Err(format!("Erro on open config file: {}", r.unwrap_err()));
     }
