@@ -1,2 +1,22 @@
-[workspace]
-members = ["server", "client"]
+[package]
+name = "downup"
+version = "0.1.0"
+authors = ["Hossein Daneshvar <daneshvar.ho@gmail.com>"]
+edition = "2018"
+
+[[bin]]
+name = "client"
+path = "src/bin/client.rs"
+
+[[bin]]
+name = "server"
+path = "src/bin/server.rs"
+
+[dependencies]
+elapsed = "0.1"
+bytesize = "1.0.0"
+toml = "0.5.6"
+serde = "1.0.97"
+serde_derive = "1.0"
+net2 = "0.2.34"
+parse_duration = "2.1.0"

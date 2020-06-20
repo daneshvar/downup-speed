@@ -1,0 +1,5 @@
+[server]
+protocol = "tcp"
+ip = "0.0.0.0"
+port = 6000
+timeout = "20s"

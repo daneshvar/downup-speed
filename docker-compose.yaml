@@ -2,14 +2,21 @@ version: '3.4'
 
 services:
   server:
-    image: server:latest
+    image: downup:latest
+    command: server
     build:
-      context: ./server
+      context: .
+    volumes:
+      - type: bind
+        source: ./server.toml
+        target: /etc/config.toml
+        read_only: true
 
   client:
-    image: client/latest
+    image: downup:latest
+    command: client
     build:
-      context: ./client
+      context: .
     volumes:
       - type: bind
         source: ./client.toml

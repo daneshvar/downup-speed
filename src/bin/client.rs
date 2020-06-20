@@ -24,6 +24,7 @@ struct Test {
 }
 
 fn main() {
+    println!("Client 2 ...");
     let config;
     match load_config() {
         Ok(c) => config = c,
@@ -43,8 +44,7 @@ fn main() {
         .expect("Error on Parse config upload time");
 
     println!(
-        "{}Server  : {}\nProtocol: {}\nTimeout : {}\n",
-        client::CLEAR_SCREEN,
+        "Server  : {}\nProtocol: {}\nTimeout : {}\n",
         addr,
         protocol,
         config.server.timeout.as_str()
@@ -71,7 +71,7 @@ fn upload(
     timeout: time::Duration,
     duration: time::Duration,
 ) -> Result<(), String> {
-    client::connect(protocol, addr, timeout)?.upload(duration)
+    downup::connect(protocol, addr, timeout)?.upload(duration)
 }
 
 fn download(
@@ -80,7 +80,7 @@ fn download(
     timeout: time::Duration,
     duration: time::Duration,
 ) -> Result<(), String> {
-    client::connect(protocol, addr, timeout)?.download(duration)
+    downup::connect(protocol, addr, timeout)?.download(duration)
 }
 
 fn load_config() -> Result<Config, String> {
