@@ -1,7 +1,7 @@
 # downup-speed
     Speed Test Service of Download &amp; Upload
 
-#Build
+# Build
     docker-compose build
 
 # Run Server
