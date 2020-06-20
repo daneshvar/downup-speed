@@ -1,5 +1,5 @@
-# downup-speed
-    Speed Test Service of Download &amp; Upload
+# Downup Speed
+    Speed Test Service of Download & Upload
 
 # Build
     docker-compose build
