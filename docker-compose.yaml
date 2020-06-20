@@ -10,3 +10,8 @@ services:
     image: client/latest
     build:
       context: ./client
+    volumes:
+      - type: bind
+        source: ./client.toml
+        target: /etc/config.toml
+        read_only: true
