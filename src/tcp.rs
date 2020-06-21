@@ -40,7 +40,10 @@ pub fn connect(addr: &str, timeout: time::Duration) -> Result<Stream, String> {
     Ok(Stream::new(Box::new(stream)))
 }
 
-pub fn listen(addr: &str, incoming_fn: fn(stream: &mut Stream)) -> Result<(), String> {
+pub fn listen(
+    addr: &str,
+    incoming_fn: fn(stream: &mut Stream, remote: String),
+) -> Result<(), String> {
     let listener;
     match TcpListener::bind(addr) {
         Ok(l) => listener = l,
@@ -53,8 +56,10 @@ pub fn listen(addr: &str, incoming_fn: fn(stream: &mut Stream)) -> Result<(), St
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                println!("New connection: {}", stream.peer_addr().unwrap());
-                thread::spawn(move || incoming_fn(&mut Stream::new(Box::new(stream))));
+                thread::spawn(move || {
+                    let remote = format!("{}", stream.peer_addr().unwrap());
+                    incoming_fn(&mut Stream::new(Box::new(stream)), remote)
+                });
             }
             Err(e) => {
                 println!("Error: {}", e);

@@ -26,6 +26,6 @@ pub fn connect(addr: &str, _timeout: time::Duration) -> Result<Stream, String> {
     }
 }
 
-pub fn listen(_addr: &str, _f: fn(stream: &mut Stream)) -> Result<(), String> {
+pub fn listen(_addr: &str, _f: fn(stream: &mut Stream, remote: String)) -> Result<(), String> {
     Err(String::from("UDP Listen doesn't implement"))
 }
