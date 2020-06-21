@@ -11,6 +11,7 @@ services:
         source: ./server.toml
         target: /etc/config.toml
         read_only: true
+    network_mode: "host"
 
   client:
     image: downup:latest
@@ -22,3 +23,4 @@ services:
         source: ./client.toml
         target: /etc/config.toml
         read_only: true
+    network_mode: "host"
