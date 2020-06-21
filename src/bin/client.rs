@@ -1,9 +1,9 @@
-extern crate parse_duration;
-
 use downup::client;
 use serde_derive::Deserialize;
 use std::env;
 use toml;
+
+extern crate parse_duration;
 
 #[derive(Debug, Deserialize)]
 struct Config {
@@ -43,16 +43,14 @@ fn main() {
 
     if upload_duration.as_secs() > 0 {
         println!("[Upload  ] ...");
-        let mut conn = client::connect(protocol, addr, timeout).expect("connect");
-        if let Err(e) = conn.upload(upload_duration) {
+        if let Err(e) = client::upload(protocol, addr, timeout, upload_duration) {
             println!("Error in Upload on {}://{}: {:?}", protocol, addr, e);
         }
     }
 
     if download_duration.as_secs() > 0 {
         println!("[Download] ...");
-        let mut conn = downup::client::connect(protocol, addr, timeout).expect("connect");
-        if let Err(e) = conn.download(download_duration) {
+        if let Err(e) = client::download(protocol, addr, timeout, download_duration) {
             println!("Error in Download on {}://{}: {:?}", protocol, addr, e);
         }
     }

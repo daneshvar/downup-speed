@@ -1,3 +1,4 @@
+use crate::stream::{NetStream, Stream};
 use net2::TcpStreamExt;
 use std::io;
 use std::net;
@@ -5,7 +6,7 @@ use std::net::{TcpListener, TcpStream};
 use std::thread;
 use std::time;
 
-impl super::stream::Stream for TcpStream {
+impl NetStream for TcpStream {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         io::Write::write(self, buf)
     }
@@ -20,10 +21,7 @@ impl super::stream::Stream for TcpStream {
     }
 }
 
-pub fn connect(
-    addr: &str,
-    timeout: time::Duration,
-) -> Result<Box<dyn super::stream::Stream>, String> {
+pub fn connect(addr: &str, timeout: time::Duration) -> Result<Stream, String> {
     let socket_addr: net::SocketAddr = addr.parse().expect("Addr Parse Error");
     let stream;
     match TcpStream::connect_timeout(&socket_addr, timeout) {
@@ -39,10 +37,10 @@ pub fn connect(
         return Err(format!("Set Read Timeout: {}", e));
     }
 
-    Ok(Box::new(stream))
+    Ok(Stream::new(Box::new(stream)))
 }
 
-pub fn listen(addr: &str, f: fn(stream: Box<dyn super::stream::Stream>)) -> Result<(), String> {
+pub fn listen(addr: &str, incoming_fn: fn(stream: &mut Stream)) -> Result<(), String> {
     let listener;
     match TcpListener::bind(addr) {
         Ok(l) => listener = l,
@@ -50,15 +48,13 @@ pub fn listen(addr: &str, f: fn(stream: Box<dyn super::stream::Stream>)) -> Resu
     }
 
     // accept connections and process them, spawning a new thread for each one
-    println!("Server listening on port 3333");
+    println!("Server listening: {}", addr);
+
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
                 println!("New connection: {}", stream.peer_addr().unwrap());
-                thread::spawn(move || {
-                    // connection succeeded
-                    f(Box::new(stream));
-                });
+                thread::spawn(move || incoming_fn(&mut Stream::new(Box::new(stream))));
             }
             Err(e) => {
                 println!("Error: {}", e);
@@ -66,8 +62,8 @@ pub fn listen(addr: &str, f: fn(stream: Box<dyn super::stream::Stream>)) -> Resu
             }
         }
     }
+
     // close the socket server
     drop(listener);
-
     Ok(())
 }

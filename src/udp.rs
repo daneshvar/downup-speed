@@ -1,9 +1,10 @@
+use crate::stream::{NetStream, Stream};
 use net2::UdpSocketExt;
 use std::io;
 use std::net::UdpSocket;
 use std::time;
 
-impl super::stream::Stream for UdpSocket {
+impl NetStream for UdpSocket {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         self.send(buf)
     }
@@ -18,12 +19,13 @@ impl super::stream::Stream for UdpSocket {
     }
 }
 
-pub fn connect(
-    addr: &str,
-    _timeout: time::Duration,
-) -> Result<Box<dyn super::stream::Stream>, String> {
+pub fn connect(addr: &str, _timeout: time::Duration) -> Result<Stream, String> {
     match UdpSocket::bind(addr) {
-        Ok(socket) => Ok(Box::new(socket)),
+        Ok(socket) => Ok(Stream::new(Box::new(socket))),
         Err(err) => Err(format!("{}", err)),
     }
+}
+
+pub fn listen(_addr: &str, _f: fn(stream: &mut Stream)) -> Result<(), String> {
+    Err(String::from("UDP Listen doesn't implement"))
 }
