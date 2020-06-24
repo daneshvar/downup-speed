@@ -37,6 +37,9 @@ pub fn connect(addr: &str, timeout: time::Duration) -> Result<Stream, String> {
         return Err(format!("Set Read Timeout: {}", e));
     }
 
+    //stream.set_nodelay(true);
+    //stream.set_keepalive_ms(Some(5000));
+
     Ok(Stream::new(Box::new(stream)))
 }
 
