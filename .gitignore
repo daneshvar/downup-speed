@@ -14,3 +14,5 @@ env/
 
 .idea/
 .vscode/
+
+go-server/downup-go
